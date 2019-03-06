@@ -1,5 +1,5 @@
-import java.util.ArrayList;
-
+import java.util.*;
+import java.text.SimpleDateFormat;
 import javax.lang.model.util.ElementScanner6;
 
 import java.io.*;
@@ -15,6 +15,7 @@ public class dupefind {
 
 		return false;
 	}
+
 
 	private static ArrayList<File> findEntry(ArrayList<File> al, ArrayList<ArrayList<File>> aaf)
 	{
@@ -50,9 +51,62 @@ public class dupefind {
 		return ln;
 	}
 
+	private static void list(ArrayList<ArrayList<File>> duplicatelist)
+	{
+		for (ArrayList<File> al : duplicatelist)
+		{
+			listLine(al);
+			System.out.println("--");
+		}
+	}
+	private static void listLine(ArrayList<File> al)
+	{
+		for (File f: al)
+			printFile(f);
+	}
 	private static void printFile(File f)
 	{
 		// make an ls -l type display
+		StringBuilder dirent = new StringBuilder();
+
+		if (f.isDirectory())
+			dirent.append("d");
+			else
+			dirent.append("-");
+
+			if (f.canRead())
+			dirent.append("r");
+			else
+			dirent.append("-");
+
+			if (f.canWrite())
+			dirent.append("w");
+			else
+			dirent.append("-");
+
+			if (f.canExecute())
+			dirent.append("x");
+			else
+			dirent.append("-");
+
+			dirent.append(" ");
+
+			dirent.append(f.length());
+
+			dirent.append(" ");
+
+			Calendar c = Calendar.getInstance();
+			c.setTimeInMillis(f.lastModified());         
+			Date d = (Date) c.getTime();        
+			SimpleDateFormat format = new SimpleDateFormat("MMM dd HH:mm");       
+
+			dirent.append(format.format(d));
+
+			dirent.append(" ");
+
+			dirent.append(f.getPath());
+
+			System.out.println(dirent);
 	}
 
 	private static void printParentLine (ArrayList<File> al)
@@ -240,6 +294,8 @@ public class dupefind {
 							printParent(currentList);
 					} else if ("print".equals(arguments[0])) {
 							print(currentList);	
+						} else if ("list".equals(arguments[0])) {
+							list(currentList);	
 					} else if ("quit".equals(arguments[0])) {
 						System.exit(0);
 					}
