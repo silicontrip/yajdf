@@ -3,6 +3,9 @@ import java.text.SimpleDateFormat;
 import javax.lang.model.util.ElementScanner6;
 
 import java.io.*;
+import org.jline.terminal.TerminalBuilder;
+import org.jline.terminal.Terminal;
+import org.jline.reader.*;
 
 public class dupefind {
 
@@ -220,10 +223,26 @@ public class dupefind {
 
 			ArrayList<ArrayList<File>> currentList = allList;
 
-			while (true) {
-				
-				System.out.print("" + currentList.size() + "> ");	
-				String argument = readln();
+                        TerminalBuilder builder = TerminalBuilder.builder();
+                        LineReader reader = LineReaderBuilder.builder().build();
+
+
+
+                        while (true) {
+
+                                System.out.print("" + currentList.size() + "> ");
+                                String argument = null;
+                                try {
+                                        argument = reader.readLine(""+currentList.size() + "> ",null,(MaskingCallback) null,null);
+                                } catch (UserInterruptException e) {
+                                        // Ignore
+                                } catch (EndOfFileException e) {
+                                        return;
+                                }
+                                if (argument == null) {
+                                        continue;
+                                }
+                                argument = argument.trim();
 
 				// going to need a command parser class...
 				String[] arguments = argument.split(":");
