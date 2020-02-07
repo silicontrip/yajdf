@@ -179,28 +179,35 @@ public class Filelist implements Runnable, Serializable {
 
 		toProcess = new ArrayList<File>(scanDirs);
 		
-		//toProcess.add(getScanDir());
+		// System.out.println("toProcess: " + toProcess.get(0));
+
+		// toProcess.add(getScanDir());
 
 		while (toProcess.size() > 0) {
-			for (File sourcefile: toProcess.get(0).listFiles()) {
-				//System.out.println(sourcefile.getAbsolutePath());
-				if (sourcefile.isFile()) {
-					Long fsize = new Long(sourcefile.length());
-					if (fsize > 0)  // use find -empty
-					{
-						if (flist.containsKey(fsize))
+			//System.out.println("toProcess size: " + toProcess.size());
+			//System.out.println("get " + toProcess.get(0));
+			// need to check for permission here
+			if (Files.isReadable(toProcess.get(0).toPath())) {
+				for (File sourcefile: toProcess.get(0).listFiles()) {
+					//System.out.println(sourcefile.getAbsolutePath());
+					if (sourcefile.isFile()) {
+						Long fsize = new Long(sourcefile.length());
+						if (fsize > 0)  // use find -empty
 						{
-							flist.get(fsize).add(sourcefile);
-						} else {
-							HashSet<File> hs = new HashSet<File>();
-							hs.add(sourcefile);
-							flist.put(fsize,hs);
+							if (flist.containsKey(fsize))
+							{
+								flist.get(fsize).add(sourcefile);
+							} else {
+								HashSet<File> hs = new HashSet<File>();
+								hs.add(sourcefile);
+								flist.put(fsize,hs);
+							}
 						}
+					} else if ( sourcefile.isDirectory()) {
+					      toProcess.add(sourcefile);
+					} else {
+						System.out.println ("Source is not a file or directory. " + sourcefile.getAbsolutePath());
 					}
-				} else if ( sourcefile.isDirectory()) {
-				      toProcess.add(sourcefile);
-				} else {
-					System.out.println ("Source is not a file.");
 				}
 			}
 			toProcess.remove(0);
