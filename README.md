@@ -56,3 +56,12 @@ comparing... 300/469 81
 1> delete
 Deleting... /mnt/c/Users/mheath/Music/Compilations/One Perfect Day/AlbumArt_{B67670CF-FAA6-48FF-BFA4-CC8D6FDACAAE}_Small.jpg
 ```
+
+## TODO
+
+general command line parser improvements:
+1) Readline command history. Allow arrow up to recall previous commands.
+2) Readline command editing.  Allow left and right arrows to move the cursor.
+3) Readline tab completion. Pressing TAB to complete the unique part of the currently entered command. 
+4) ? help. Implement a help system similar to IOS when pressing ? will show the possible valid commands from what has been entered.
+5) Implement unique abbreviations. Similar to IOS enter any number of characters to uniquely identify a valid command.  This may also require adding spaces inbetween the matching rule keywords eg "group:AnyNameContains" becomes "group Any Name Contains" fully abbrevieated becomes "g an n c"
