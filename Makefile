@@ -1,5 +1,5 @@
 
-CP=.
+CP=.:jline-3.10.0.jar
 CLASSES=Filelist.class Rulelist.class \
 Filepart.class FilepartCanonical.class FilepartName.class FilepartParent.class \
 Rule.class RuleAll.class RuleAny.class RuleOne.class \
