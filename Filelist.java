@@ -179,7 +179,9 @@ public class Filelist implements Runnable, Serializable {
 
 		toProcess = new ArrayList<File>(scanDirs);
 		
-		//toProcess.add(getScanDir());
+		// System.out.println("toProcess: " + toProcess.get(0));
+
+		// toProcess.add(getScanDir());
 
 	//System.out.println("size: " + toProcess.size() + " item[0]: " + toProcess.get(0) +"<");
 	// System.out.println("filelist: " + toProcess.get(0).listFiles());
@@ -192,6 +194,7 @@ public class Filelist implements Runnable, Serializable {
 		//		System.out.println("file list count: " + testist.length);
 				for (int idx=0; idx<testist.length; ++idx) {
 					File sourcefile = testist[idx];
+
 					//System.out.println(sourcefile.getAbsolutePath());
 					if (sourcefile.isFile()) {
 						Long fsize = new Long(sourcefile.length());
@@ -207,10 +210,9 @@ public class Filelist implements Runnable, Serializable {
 							}
 						}
 					} else if ( sourcefile.isDirectory()) {
-						//	System.out.println("adding... " + sourcefile);
-							toProcess.add(sourcefile);
+					      toProcess.add(sourcefile);
 					} else {
-						System.out.println ("Source is not a file.");
+						System.out.println ("Source is not a file or directory. " + sourcefile.getAbsolutePath());
 					}
 				}
 			}
