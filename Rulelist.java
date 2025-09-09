@@ -21,15 +21,26 @@ public class Rulelist {
 
 // still would like to automate this even more
 		compMap = new HashMap<String,Stringcompare>();
-		compMap.put("Equals", new StringEquals());
+		// E M C S
+		compMap.put("Equals", new StringEquals()); 
 		compMap.put("Matches", new StringMatches());
 		compMap.put("Contains", new StringContains());
 		compMap.put("StartsWith",  new StringStartsWith());
 
+		compMap.put("e", new StringEquals()); 
+		compMap.put("m", new StringMatches());
+		compMap.put("c", new StringContains());
+		compMap.put("s",  new StringStartsWith());
+
 		partMap = new HashMap<String,Filepart>();
+		// C N P
 		partMap.put("Canonical" , new FilepartCanonical());
 		partMap.put("Name",  new FilepartName());
 		partMap.put("Parent" , new FilepartParent());
+
+		partMap.put("c" , new FilepartCanonical());
+		partMap.put("n",  new FilepartName());
+		partMap.put("p" , new FilepartParent());
 
 		groupRuleMap = new HashMap<String,Rule>();
 		filterMap = new HashMap<String,Filter>();
@@ -38,13 +49,21 @@ public class Rulelist {
 		{
 			for (String compName: compMap.keySet())
 			{
+
+				//N O A
 				groupRuleMap.put ("Any" + partName + compName, new RuleAny(partMap.get(partName),compMap.get(compName)));
 				groupRuleMap.put ("One" + partName + compName, new RuleOne(partMap.get(partName),compMap.get(compName)));
 				groupRuleMap.put ("All" + partName + compName, new RuleAll(partMap.get(partName),compMap.get(compName)));
 
+				groupRuleMap.put ("n" + partName + compName, new RuleAny(partMap.get(partName),compMap.get(compName)));
+				groupRuleMap.put ("o" + partName + compName, new RuleOne(partMap.get(partName),compMap.get(compName)));
+				groupRuleMap.put ("a" + partName + compName, new RuleAll(partMap.get(partName),compMap.get(compName)));
+
+				//A O
 				filterMap.put("Any" + partName + compName, new FilterAny(partMap.get(partName),compMap.get(compName)));
 				filterMap.put("One" + partName + compName, new FilterOne(partMap.get(partName),compMap.get(compName)));
-
+				filterMap.put("a" + partName + compName, new FilterAny(partMap.get(partName),compMap.get(compName)));
+				filterMap.put("o" + partName + compName, new FilterOne(partMap.get(partName),compMap.get(compName)));
 			}
 		}
 	}
