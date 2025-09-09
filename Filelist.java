@@ -3,6 +3,7 @@ import java.io.*;
 import java.util.*;
 import java.nio.file.*;
 
+import java.security.MessageDigest;
 
 public class Filelist implements Runnable, Serializable {
 
@@ -39,6 +40,33 @@ public class Filelist implements Runnable, Serializable {
 // these are needed for serializable...?
 	public ArrayList<ArrayList<File>> getDuplicatelist() { return duplicatelist; }
 	public void setDuplicatelist(ArrayList<ArrayList<File>> dl) { duplicatelist = dl; }
+
+	private String calculateFileHash(File file) {
+		try (InputStream is = Files.newInputStream(file.toPath())) {
+			MessageDigest md5Digest = MessageDigest.getInstance("MD5");
+	
+			byte[] buffer = new byte[8192];
+			int bytesRead;
+			while ((bytesRead = is.read(buffer)) != -1) {
+				md5Digest.update(buffer, 0, bytesRead);
+			}
+	
+			byte[] digest = md5Digest.digest();
+	
+			// Convert byte array to a hex string to use as a Map key
+			StringBuilder sb = new StringBuilder();
+			for (byte b : digest) {
+				sb.append(String.format("%02x", b));
+			}
+			return sb.toString();
+	
+		} catch (Exception e) {
+			// Return a unique string for files that can't be read,
+			// so they don't get grouped with anything else.
+			return "ERROR_" + file.getAbsolutePath();
+		}
+	}
+	
 
 	public void print() 
 	{
@@ -143,6 +171,42 @@ public class Filelist implements Runnable, Serializable {
 				//	filesProcessed ++;
 					//System.err.println("processed: " + filesProcessed); // tp be handled in a different thread
 				} else {
+					ArrayList<String>hashFiles = new ArrayList<String>();
+					for(File f : samesize)
+					{
+						hashFiles.add(calculateFileHash(f));
+					}
+
+					boolean[] alreadyGrouped = new boolean[samesize.size()];
+
+					for (int i =0; i < hashFiles.size(); i++)
+					{
+						//System.err.println("" + i + "/" + hashFiles.size() + " multicompare.");
+						if (!alreadyGrouped[i])
+						{
+							ArrayList<File> samelist = new ArrayList<File>();
+							samelist.add(samesize.get(i));
+
+							for (int j=i+1; j < hashFiles.size(); j++)
+							{
+								if (!alreadyGrouped[j])
+								{
+									if (hashFiles.get(i).equals(hashFiles.get(j)))
+									{
+										if (sameContent(samesize.get(i),samesize.get(j)))
+										{
+											samelist.add(samesize.get(j));
+										}
+									}
+								}
+							}
+
+							if (samelist.size() > 1)
+								duplicatelist.add(samelist);
+						}
+					}
+
+/* 
 					ArrayList<File> duplicateFiles = new ArrayList<File>(samesize);
 					while (duplicateFiles.size() > 0)
 					{
@@ -165,6 +229,7 @@ public class Filelist implements Runnable, Serializable {
 
 						duplicateFiles.remove(0);
 					}
+					*/
 				}
 			}	
 
@@ -197,7 +262,7 @@ public class Filelist implements Runnable, Serializable {
 					if (!Files.isSymbolicLink(sourcefile.toPath()))
 					//System.out.println(sourcefile.getAbsolutePath());
 					if (sourcefile.isFile()) {
-						Long fsize = new Long(sourcefile.length());
+						Long fsize = sourcefile.length();
 						if (fsize > 0)  // use find -empty
 						{
 							if (flist.containsKey(fsize))
