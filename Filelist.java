@@ -194,7 +194,7 @@ public class Filelist implements Runnable, Serializable {
 		//		System.out.println("file list count: " + testist.length);
 				for (int idx=0; idx<testist.length; ++idx) {
 					File sourcefile = testist[idx];
-
+					if (!Files.isSymbolicLink(sourcefile.toPath()))
 					//System.out.println(sourcefile.getAbsolutePath());
 					if (sourcefile.isFile()) {
 						Long fsize = new Long(sourcefile.length());
