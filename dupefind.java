@@ -1,9 +1,7 @@
-import java.util.ArrayList;
-
-import javax.lang.model.util.ElementScanner6;
-
 import java.io.*;
-
+import java.util.ArrayList;
+import javax.lang.model.util.ElementScanner6;
+import  java.nio.file.Files;
 
 //public Filelist fll;
 //public File fl;
@@ -87,32 +85,32 @@ public class dupefind {
 				printParentLine(al);
 	}
 
-		private static void printLine (ArrayList<File> al)
+	private static void printLine (ArrayList<File> al)
+	{
+		if (al != null )
 		{
-			if (al != null )
-			{
-			boolean first = true;
-            for (File lfl : al)
-                        {
-                                if(!first)
-                                        System.out.print(" : ");
-                                first=false;
-                                try {
-                                        System.out.print(lfl.getCanonicalPath());
-                                } catch (Exception e) {
-                                        System.out.print("*ERROR*");
-                                }
-                        }
-						System.out.println("");
+		boolean first = true;
+		for (File lfl : al)
+					{
+							if(!first)
+									System.out.print(" : ");
+							first=false;
+							try {
+									System.out.print(lfl.getCanonicalPath());
+							} catch (Exception e) {
+									System.out.print("*ERROR*");
+							}
 					}
-					else      
-					System.out.println("null");
-		}
-        public static void print(ArrayList<ArrayList<File>> duplicatelist)
-        {
-				for (ArrayList<File> al : duplicatelist)
-					printLine(al);
-        }
+					System.out.println("");
+				}
+				else      
+				System.out.println("null");
+	}
+	public static void print(ArrayList<ArrayList<File>> duplicatelist)
+	{
+			for (ArrayList<File> al : duplicatelist)
+				printLine(al);
+	}
 	public static void main(String[] args) {
 		try {
 			Rulelist  rulelist  = new Rulelist();
@@ -159,6 +157,8 @@ public class dupefind {
 			   }).start();
 
 			// loop progress...
+			System.out.println("     Processed/Total, Matches");
+
 			while (!fll.getCompareCompleted()) { 
 				try {
 					System.out.println("comparing... " + fll.getProcessed() + "/" + totalfiles + " " + fll.getMatches());
@@ -179,11 +179,27 @@ public class dupefind {
 				// going to need a command parser class...
 				String[] arguments = argument.split(":");
 				if (arguments.length == 1) {
-					if (("help".equals(arguments[0]) || ("?".equals(arguments[0])) ))
+					if ("help".equals(arguments[0]) || "?".equals(arguments[0]) || "h".equals(arguments[0]) )
 					{
+						System.out.print(":: - Show Predicate Commands");
+
+						System.out.print("all (a) - ");
+						System.out.print("compare (c) - ");
+						System.out.print("delete - delete selection and reset");
+						System.out.print("filter (f) - select file from duplicate groups which match predicate");
+
+						System.out.print("group (g) - select duplicate groups which match predicate");
+						System.out.print("ignore (i) - ignore duplicate groups which match predicate");
+
+						System.out.print("parent - show parent of current selection");
+						System.out.print("print - show current selection");
+						System.out.print("quit (q) - ");
+
+						System.out.print("reset (r) - reset selection");
+
 
 					} 
-					else if ("reset".equals(arguments[0]))
+					else if ("reset".equals(arguments[0]) ||  "r".equals(arguments[0]) )
 					{
 						currentList = allList;
 					} else if ("delete".equals(arguments[0])) {
@@ -196,8 +212,18 @@ public class dupefind {
 							{
 								for (File f: deleteList)
 								{
-									System.out.println("Deleting... " + f.getCanonicalPath());
-									f.delete();
+									try {
+										Files.delete(f.toPath());
+										System.out.println("Deleted the file: " + f.getCanonicalPath());
+									} catch (Exception e) {
+										System.out.println(e.getMessage());
+									}
+									// System.out.println("Deleting... " + f.getCanonicalPath());
+									//if(f.delete()) {
+									//	System.out.println("Deleted the file: " + f.getCanonicalPath());
+									//  } else {
+									//	System.out.println("Failed to delete: " + f.getCanonicalPath());
+									//  } 
 								}
 								if(al.size() - deleteList.size() > 1 )
 								{
@@ -225,7 +251,7 @@ public class dupefind {
 						}
 						allList = newList;
 						currentList = newList;
-					} else if ("compare".equals(arguments[0])) {
+					} else if ("compare".equals(arguments[0]) ||  "c".equals(arguments[0])) {
 						for (ArrayList<File> al : allList)
 						{
 							ArrayList<File> deleteList = findEntry(al,currentList);
@@ -239,7 +265,7 @@ public class dupefind {
 								printLine(deleteList);
 							}
 						}
-					} else if ("all".equals(arguments[0])) {
+					} else if ("all".equals(arguments[0]) ||  "a".equals(arguments[0])) {
 						for (ArrayList<File> al : allList)
 						{
 							ArrayList<File> deleteList = findEntry(al,currentList);
@@ -253,15 +279,15 @@ public class dupefind {
 							printParent(currentList);
 					} else if ("print".equals(arguments[0])) {
 							print(currentList);	
-					} else if ("quit".equals(arguments[0])) {
+					} else if ("quit".equals(arguments[0]) ||  "q".equals(arguments[0])) {
 						System.exit(0);
 					}
 				} else if (arguments.length == 3) {
-					if ("group".equals(arguments[0])) {
+					if ("group".equals(arguments[0]) || "g".equals(arguments[0])) {
 						currentList = rulelist.evalGroup(currentList, arguments[1],arguments[2]);
-					} else if ("ignore".equals(arguments[0])) {
+					} else if ("ignore".equals(arguments[0]) || "i".equals(arguments[0])) {
 							currentList = rulelist.evalIgnore(currentList, arguments[1],arguments[2]);
-					} else if ("filter".equals(arguments[0])) {
+					} else if ("filter".equals(arguments[0]) || "f".equals(arguments[0])) {
 						// remember to check that we're not deleting all duplicates
 						currentList = rulelist.evalFilter(currentList, arguments[1], arguments[2]);
 					} else {
