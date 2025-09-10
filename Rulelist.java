@@ -45,6 +45,12 @@ public class Rulelist {
 		groupRuleMap = new HashMap<String,Rule>();
 		filterMap = new HashMap<String,Filter>();
 
+
+		filterMap.put("newest", new FilterNewest());
+		filterMap.put("oldest", new FilterOldest());
+		filterMap.put("first", new FilterFirst());
+		filterMap.put("last", new FilterLast());
+
 		for (String partName: partMap.keySet())
 		{
 			for (String compName: compMap.keySet())
@@ -115,6 +121,30 @@ public class Rulelist {
 			if (nl.size() > 0)
 				ndl.add(nl);	
 		}
+		// need to check that this doesn't delete all files.
+		return ndl;
+	}
+
+	public ArrayList<ArrayList<File>> evalKeep(ArrayList<ArrayList<File>> duplicatelist, String groupCommand, String groupArgument)
+	{
+		if (!filterMap.containsKey(groupCommand))
+		return duplicatelist;
+		ArrayList<ArrayList<File>> ndl = new ArrayList<ArrayList<File>>();
+		for (ArrayList<File> al : duplicatelist)
+		{
+			ArrayList<File> nl = filterMap.get(groupCommand).eval(groupArgument,al);
+			
+			// al is the superset of nl.  We only want elements in al which are not in nl
+			ArrayList<File> nal = new ArrayList<File>();
+
+			for (File f : al)
+			{
+				if (!nl.contains(f))
+					nal.add(f);
+			}
+			ndl.add(nal);
+		}
+
 		// need to check that this doesn't delete all files.
 		return ndl;
 	}
