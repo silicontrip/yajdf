@@ -213,6 +213,7 @@ public class dupefind {
 						ArrayList<ArrayList<File>> newList = new ArrayList<ArrayList<File>>();
 						for (ArrayList<File> al : allList)
 						{
+							System.out.println("Checking Group for deletion: ");
 							ArrayList<File> deleteList = findEntry(al,currentList);
 							if (deleteList != null && deleteList.size() < al.size())
 							{
@@ -231,7 +232,7 @@ public class dupefind {
 									//	System.out.println("Failed to delete: " + f.getCanonicalPath());
 									//  } 
 								}
-								if(al.size() - deleteList.size() > 1 )
+								if(al.size() - deleteList.size() >= 1 )
 								{
 									ArrayList<File> nal = new ArrayList<File>();
 									// add remaining duplicates
@@ -288,6 +289,18 @@ public class dupefind {
 					} else if ("quit".equals(arguments[0]) ||  "q".equals(arguments[0])) {
 						System.exit(0);
 					}
+				} else if (arguments.length == 2) {
+					if ("keep".equals(arguments[0]) || "k".equals(arguments[0])) {
+
+						String filterCommand = arguments[1];
+						// Handle optional third argument for rules that need it
+						String filterArgument = (arguments.length > 2) ? arguments[2] : "";
+					
+						// A single, clean call to the engine.
+						currentList = rulelist.evalKeep(currentList, filterCommand, filterArgument);
+					} else  {
+						rulelist.printHelp();
+					}
 				} else if (arguments.length == 3) {
 					if ("group".equals(arguments[0]) || "g".equals(arguments[0])) {
 						currentList = rulelist.evalGroup(currentList, arguments[1],arguments[2]);
@@ -304,8 +317,6 @@ public class dupefind {
 					
 						// A single, clean call to the engine.
 						currentList = rulelist.evalKeep(currentList, filterCommand, filterArgument);
-
-					
 					} else {
 						rulelist.printHelp();
 					}
