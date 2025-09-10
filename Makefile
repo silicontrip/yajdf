@@ -3,7 +3,8 @@ CP=.
 CLASSES=Filelist.class Rulelist.class \
 Filepart.class FilepartCanonical.class FilepartName.class FilepartParent.class \
 Rule.class RuleAll.class RuleAny.class RuleOne.class \
-Filter.class FilterAny.class FilterOne.class \
+Filter.class FilterAny.class FilterOne.class FilterNewest.class FilterOldest.class \
+FilterFirst.class FilterLast.class \
 Stringcompare.class StringContains.class StringEquals.class StringMatches.class StringStartsWith.class \
 dupefind.class test.class
 
