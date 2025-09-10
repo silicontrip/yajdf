@@ -213,7 +213,7 @@ public class dupefind {
 						ArrayList<ArrayList<File>> newList = new ArrayList<ArrayList<File>>();
 						for (ArrayList<File> al : allList)
 						{
-							System.out.println("Checking Group for deletion: ");
+							//System.out.println("Checking Group for deletion: ");
 							ArrayList<File> deleteList = findEntry(al,currentList);
 							if (deleteList != null && deleteList.size() < al.size())
 							{
