@@ -297,6 +297,8 @@ public class Filelist implements Runnable, Serializable {
 										if (sameContent(samesize.get(i),samesize.get(j)))
 										{
 											samelist.add(samesize.get(j));
+											alreadyGrouped[i] = true;
+											alreadyGrouped[j] = true;
 										}
 									}
 								}
