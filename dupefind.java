@@ -161,7 +161,8 @@ public class dupefind {
 
 			while (!fll.getCompareCompleted()) { 
 				try {
-					System.out.println("comparing... " + fll.getProcessed() + "/" + totalfiles + " " + fll.getMatches());
+					//System.out.println("comparing... " + fll.getProcessed() + "/" + totalfiles + " " + fll.getMatches());
+					System.out.println(fll.getStatus());
 					Thread.sleep(1000); 
 				} catch (InterruptedException ie) { ; }
 			}
@@ -181,21 +182,26 @@ public class dupefind {
 				if (arguments.length == 1) {
 					if ("help".equals(arguments[0]) || "?".equals(arguments[0]) || "h".equals(arguments[0]) )
 					{
-						System.out.print(":: - Show Predicate Commands");
+						System.out.println("This tool works by providing a list of files to delete.");
+						System.out.println("This list can be progressively refined with the following commands:");
+						system.out.println("");
+						System.out.println(":: - Show Predicate Commands");
 
-						System.out.print("all (a) - ");
-						System.out.print("compare (c) - ");
-						System.out.print("delete - delete selection and reset");
-						System.out.print("filter (f) - select file from duplicate groups which match predicate");
+						System.out.println("all (a) - ");
+						System.out.println("compare (c) - ");
+						System.out.println("delete - delete selection and reset");
+						System.out.println("filter (f) - select file from duplicate groups which match predicate");
 
-						System.out.print("group (g) - select duplicate groups which match predicate");
-						System.out.print("ignore (i) - ignore duplicate groups which match predicate");
+						System.out.println("group (g) - select duplicate groups which match predicate");
+						System.out.println("ignore (i) - ignore duplicate groups which match predicate");
+						System.out.println("keep (k) - keep files (remove from deletion) matching the filter predicate");
 
-						System.out.print("parent - show parent of current selection");
-						System.out.print("print - show current selection");
-						System.out.print("quit (q) - ");
 
-						System.out.print("reset (r) - reset selection");
+						System.out.println("parent - show parent of current selection");
+						System.out.println("print - show current selection");
+						System.out.println("quit (q) - ");
+
+						System.out.println("reset (r) - reset selection");
 
 
 					} 
@@ -290,6 +296,16 @@ public class dupefind {
 					} else if ("filter".equals(arguments[0]) || "f".equals(arguments[0])) {
 						// remember to check that we're not deleting all duplicates
 						currentList = rulelist.evalFilter(currentList, arguments[1], arguments[2]);
+					} else if ("keep".equals(arguments[0]) || "k".equals(arguments[0])) {
+
+						String filterCommand = arguments[1];
+						// Handle optional third argument for rules that need it
+						String filterArgument = (arguments.length > 2) ? arguments[2] : "";
+					
+						// A single, clean call to the engine.
+						currentList = rulelist.evalKeep(currentList, filterCommand, filterArgument);
+
+					
 					} else {
 						rulelist.printHelp();
 					}
