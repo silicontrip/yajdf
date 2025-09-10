@@ -18,7 +18,13 @@ public class Filelist implements Runnable, Serializable {
 	transient private int matchesProcessed =0;
 	transient private boolean scanCompleted = false;
 	transient private boolean compareCompleted = false;
-
+	transient private int groupTotal = 0;
+	transient private int outerGroup = 0;
+	transient private int innerGroup = 0;
+	transient private long bytesTotal = 0;
+	transient private long bytesRead = 0;
+	transient private int hashTotal = 0;
+	transient private int hashCurrent = 0;
 
 	public Filelist (File dir) { this(); addScanDir(dir); }
 	public Filelist (String dir) { this(); addScanDir(dir); }
@@ -67,7 +73,6 @@ public class Filelist implements Runnable, Serializable {
 		}
 	}
 	
-
 	public void print() 
 	{
 		for (ArrayList<File> al : duplicatelist)
@@ -90,6 +95,43 @@ public class Filelist implements Runnable, Serializable {
 		}
 	}
 
+	public String getStatus ()
+	{
+		//int count = countfiles();
+		StringBuilder sb = new StringBuilder();
+		sb.append("Comparing files: ");
+		sb.append(filesProcessed);
+		sb.append("/");
+		sb.append(countfiles());
+		if (hashTotal>0)
+		{
+			sb.append(" Hashing: (");
+			sb.append(hashCurrent);
+			sb.append("/");
+			sb.append(hashTotal);
+			sb.append(")");
+		}
+		if (groupTotal>0) 
+		{
+			sb.append(" Group: (");
+			sb.append(outerGroup);
+			sb.append("/");
+			sb.append(groupTotal);
+			sb.append(") (");
+			sb.append(innerGroup);
+			sb.append("/");
+			sb.append(groupTotal);
+			sb.append(")");
+		}
+		if (bytesTotal>0)
+		{
+			sb.append(" Bytes read: ");
+			sb.append(bytesRead);
+			sb.append("/");
+			sb.append(bytesTotal);
+		}
+		return sb.toString();
+	}
 
 	// from  https://stackoverflow.com/questions/27379059/determine-if-two-files-store-the-same-content
 	private boolean sameContent(File file1, File file2)  {
@@ -99,11 +141,56 @@ public class Filelist implements Runnable, Serializable {
 	private boolean sameContent(Path file1, Path file2)  {
 
 		try {
+			bytesTotal = Files.size(file1);
+
 			final long size = Files.size(file1);
 			// zero length check
-			if (size < 4096)
+			if (size < 4096) {
+				bytesTotal=0;
 				return Arrays.equals(Files.readAllBytes(file1), Files.readAllBytes(file2));
+			}
 
+/* Chunked compare
+ * 
+ * 15         try (InputStream is1 = Files.newInputStream(file1);
+   16              InputStream is2 = Files.newInputStream(file2)) {
+   17 
+   18             // 1. Create two separate buffers. 8192 (8KB) is a good, common size.
+   19             byte[] buffer1 = new byte[8192];
+   20             byte[] buffer2 = new byte[8192];
+   21 
+   22             while (true) {
+   23                 // 2. Read a chunk from each file.
+   24                 int bytesRead1 = is1.read(buffer1);
+   25                 int bytesRead2 = is2.read(buffer2);
+   26 
+   27                 // 3. Check if the number of bytes read is the same.
+   28                 // If one stream ends before the other, they are not identical.
+   29                 if (bytesRead1 != bytesRead2) {
+   30                     return false;
+   31                 }
+   32 
+   33                 // 4. If we've reached the end of both files (EOF), they are identical so far.
+   34                 if (bytesRead1 == -1) {
+   35                     return true;
+   36                 }
+   37 
+   38                 // 5. Compare the contents of the buffers.
+   39                 // We must only compare up to the number of bytes actually read.
+   40                 for (int i = 0; i < bytesRead1; i++) {
+   41                     if (buffer1[i] != buffer2[i]) {
+   42                         return false;
+   43                     }
+   44                 }
+   45 
+   46                 // 6. Update our progress tracker with the size of the chunk.
+   47                 this.bytesCompared += bytesRead1;
+   48             }
+   49         }
+   
+ */
+
+			bytesRead = 0;
 			try (BufferedInputStream is1 = new BufferedInputStream (Files.newInputStream(file1));
 				BufferedInputStream is2 = new BufferedInputStream(Files.newInputStream(file2))) {
         // Compare byte-by-byte.
@@ -112,14 +199,21 @@ public class Filelist implements Runnable, Serializable {
         // does not neccessarily read a whole array!
 				int data;
 				while ((data = is1.read()) != -1)
+				{
+					bytesRead++;
 				    if (data != is2.read())
-					return false;
+					{
+						bytesTotal=0;
+						return false;
+					}
+				}
 			}
-
+			bytesTotal = 0;
 			return true;
 		} catch (IOException e) {
 			// if one file has a read error, it's probably not going to be the same as the other file
 			// or it's best not to match it for other reasons.
+			bytesTotal=0;
 			return false;
 		}
 	}
@@ -172,15 +266,21 @@ public class Filelist implements Runnable, Serializable {
 					//System.err.println("processed: " + filesProcessed); // tp be handled in a different thread
 				} else {
 					ArrayList<String>hashFiles = new ArrayList<String>();
+					hashTotal = samesize.size();
+					hashCurrent = 0;
 					for(File f : samesize)
 					{
+						hashCurrent++;
 						hashFiles.add(calculateFileHash(f));
 					}
+					hashTotal = 0;
 
+					groupTotal = samesize.size();
 					boolean[] alreadyGrouped = new boolean[samesize.size()];
 
 					for (int i =0; i < hashFiles.size(); i++)
 					{
+						outerGroup=i;
 						//System.err.println("" + i + "/" + hashFiles.size() + " multicompare.");
 						if (!alreadyGrouped[i])
 						{
@@ -189,6 +289,7 @@ public class Filelist implements Runnable, Serializable {
 
 							for (int j=i+1; j < hashFiles.size(); j++)
 							{
+								innerGroup=j;
 								if (!alreadyGrouped[j])
 								{
 									if (hashFiles.get(i).equals(hashFiles.get(j)))
@@ -205,6 +306,9 @@ public class Filelist implements Runnable, Serializable {
 								duplicatelist.add(samelist);
 						}
 					}
+					groupTotal = 0;
+					innerGroup=0;
+					outerGroup=0;
 
 /* 
 					ArrayList<File> duplicateFiles = new ArrayList<File>(samesize);
