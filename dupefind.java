@@ -184,7 +184,7 @@ public class dupefind {
 					{
 						System.out.println("This tool works by providing a list of files to delete.");
 						System.out.println("This list can be progressively refined with the following commands:");
-						system.out.println("");
+						System.out.println("");
 						System.out.println(":: - Show Predicate Commands");
 
 						System.out.println("all (a) - ");
